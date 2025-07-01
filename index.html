@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Relatório de Execução</title>
+  <!-- Favicon e metatags para PWA -->
+  <link rel="icon" href="favicon.ico" type="favicon.ico">
+  <link rel="apple-touch-icon" href="logo ap 03.png">
+  <meta name="theme-color" content="#ff9100">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Relatório de Visitas Consolidadas">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  
+  <!-- CDNs -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --primary-color: #ff9100;
+      --primary-dark: #f39c12;
+      --bg-color: #1e1f26;
+      --secondary-bg: #2d3436;
+      --text-color: #ecf0f1;
+      --success-color: #27ae60;
+      --error-color: #c0392b;
+      --neutral-color: #7f8c8d;
+    }
+    
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(to bottom right, var(--bg-color), #343746);
+      color: var(--text-color);
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+
+    header {
+      background: linear-gradient(90deg, #fdd39b, var(--primary-color));
+      color: white;
+      padding: 20px 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    }
+
+    header img {
+      height: 42px;
+      user-select: none;
+    }
+
+    header h1 {
+      margin: 0;
+      font-weight: 600;
+      font-size: clamp(1.2rem, 4vw, 1.6rem);
+      text-shadow: 1px 1px 3px rgba(0,0,0,0.2);
+    }
+
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 40px 10px;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    select {
+      background-color: var(--secondary-bg);
+      color: var(--text-color);
+      padding: 10px 15px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.1);
+      min-width: 200px;
+      font-size: 15px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    select:hover {
+      border-color: var(--primary-color);
+    }
+
+    .btn {
+      background: linear-gradient(90deg, var(--primary-dark), #f1c40f);
+      color: #1e1f26;
+      padding: 10px 20px;
+      font-weight: bold;
+      border: none;
+      border-radius: 30px;
+      cursor: pointer;
+      font-size: 15px;
+      transition: transform 0.2s, box-shadow 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 15px rgba(243, 156, 18, 0.4);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .container {
+      padding: 0 20px 30px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .file-input-wrapper {
+      position: relative;
+      margin: 15px 0 20px;
+    }
+
+    .file-input-label {
+      background-color: var(--secondary-bg);
+      color: var(--text-color);
+      padding: 12px 18px;
+      border-radius: 8px;
+      border: 1px dashed rgba(255,255,255,0.2);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.3s;
+    }
+
+    .file-input-label:hover {
+      border-color: var(--primary-color);
+      background-color: rgba(45, 52, 54, 0.8);
+    }
+
+    .file-input-label i {
+      font-size: 18px;
+    }
+
+    #fileInput {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      border: 0;
+    }
+
+    .tabela-wrapper {
+      background-color: var(--bg-color);
+      border-radius: 16px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+      width: 100%;
+      max-height: 500px;
+      overflow-y: auto;
+      overflow-x: auto;
+      padding: 20px;
+      margin-top: 10px;
+    }
+
+    table {
+      border-collapse: collapse;
+      background: #2c3e50;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+      width: max-content;
+      margin: 0 auto;
+    }
+
+    th, td {
+      padding: 12px 14px;
+      border: 1px solid #34495e;
+      text-align: center;
+      font-size: 14px;
+      color: var(--text-color);
+      white-space: nowrap;
+    }
+
+    th {
+      background: #34495e;
+      font-weight: 600;
+      position: sticky;
+      top: 0;
+    }
+
+    .executado { background-color: var(--success-color); }
+    .nao-executado { background-color: var(--error-color); }
+    .sem-dado { background-color: var(--neutral-color); }
+
+    .loading {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.7);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .loading-spinner {
+      border: 5px solid #f3f3f3;
+      border-top: 5px solid var(--primary-color);
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px;
+      color: rgba(236, 240, 241, 0.7);
+    }
+
+    .empty-state i {
+      font-size: 50px;
+      margin-bottom: 20px;
+      opacity: 0.5;
+    }
+
+    @media (max-width: 768px) {
+      .top-bar {
+        padding: 16px 20px 10px;
+        flex-direction: column;
+        align-items: stretch;
+      }
+      
+      header {
+        padding: 15px 20px;
+      }
+      
+      .container {
+        padding: 0 10px 20px;
+      }
+      
+      .tabela-wrapper {
+        padding: 10px;
+      }
+      
+      th, td {
+        font-size: 12px;
+        padding: 8px 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Loading overlay -->
+  <div class="loading" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+    <div>Processando arquivo...</div>
+  </div>
+
+  <header>
+    <img src="logo ap 03.png" alt="Logo" id="appLogo">
+    <h1>RELATÓRIO DE VISITAS CONSOLIDADAS</h1>
+  </header>
+
+  <div class="top-bar">
+    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+      <select id="filtroAtividades" size="1">
+        <option value="TODAS">Todas as atividades</option>
+      </select>
+      <button id="btnBuscar" class="btn">🔍 Buscar</button>
+    </div>
+    <button class="btn" id="btnExport" style="display: none;">⬇ Exportar Relatório</button>
+  </div>
+
+  <div class="container">
+    <div class="file-input-wrapper">
+      <label for="fileInput" class="file-input-label">
+        <span>📁 Selecione o arquivo Excel</span>
+      </label>
+      <input type="file" id="fileInput" accept=".xlsx, .xls" />
+    </div>
+    
+    <div class="tabela-wrapper">
+      <div id="tabelaContainer">
+        <div class="empty-state">
+          <div>📊</div>
+          <h3>Nenhum arquivo carregado</h3>
+          <p>Selecione um arquivo Excel para gerar o relatório</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Manifest para PWA -->
+  <link rel="manifest" href="manifest.json">
+
+  <script>
+    // Configuração do Service Worker para PWA
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js').then(registration => {
+          console.log('ServiceWorker registrado com sucesso: ', registration.scope);
+        }).catch(err => {
+          console.log('Falha ao registrar ServiceWorker: ', err);
+        });
+      });
+    }
+
+    const dadosOrganizados = {};
+    let datas = [];
+
+    function showLoading(show) {
+      document.getElementById('loadingOverlay').style.display = show ? 'flex' : 'none';
+    }
+
+    function excelDateParaDMY(serial) {
+  const excelEpoch = new Date(1899, 11, 30); // Isso já está correto
+  let data = new Date(excelEpoch.getTime() + serial * 86400000);
+
+  // Corrige o erro do Excel sobre o ano bissexto de 1900
+  if (serial < 60) { 
+    data.setDate(data.getDate() - 1);
+  }
+  
+  const day = String(data.getDate()).padStart(2, '0');
+  const month = String(data.getMonth() + 1).padStart(2, '0');
+  const year = data.getFullYear();
+  return `${day}/${month}/${year}`;
+}
+
+    document.getElementById("fileInput").addEventListener("change", async e => {
+      const file = e.target.files[0];
+      if (!file) return;
+      
+      try {
+        showLoading(true);
+        const reader = new FileReader();
+        
+        reader.onload = evt => {
+          try {
+            const data = new Uint8Array(evt.target.result);
+            const workbook = XLSX.read(data, { type: "array" });
+            const aba = workbook.Sheets[workbook.SheetNames[0]];
+            const json = XLSX.utils.sheet_to_json(aba, { defval: "" });
+            montarRelatorio(json);
+          } catch (error) {
+            console.error("Erro ao processar arquivo:", error);
+            alert("Erro ao processar o arquivo. Verifique se o formato está correto.");
+          } finally {
+            showLoading(false);
+          }
+        };
+        
+        reader.onerror = () => {
+          showLoading(false);
+          alert("Erro ao ler o arquivo. Tente novamente.");
+        };
+        
+        reader.readAsArrayBuffer(file);
+      } catch (error) {
+        showLoading(false);
+        console.error("Erro:", error);
+        alert("Ocorreu um erro inesperado.");
+      }
+    });
+
+    function montarRelatorio(dados) {
+  if (!dados || dados.length === 0) {
+    alert("O arquivo está vazio ou não contém dados válidos.");
+    return;
+  }
+
+  Object.keys(dadosOrganizados).forEach(k => delete dadosOrganizados[k]);
+  const datasSet = new Set();
+  const atividadesSet = new Set();
+
+  dados.forEach(item => {
+    try {
+      let rawData = item["Data"];
+      let dataFormatada = "";
+      
+      if (typeof rawData === "number") {
+        dataFormatada = excelDateParaDMY(rawData); // Alterado para usar a nova função
+      } else if (typeof rawData === "string") {
+        const data = new Date(rawData);
+        if (!isNaN(data)) {
+          // ADICIONANDO O CÓDIGO DE DIAGNÓSTICO AQUI
+          console.log("Data original:", rawData);
+          console.log("Dia da semana calculado:", data.getDay()); // Diagnóstico do dia da semana
+          console.log("Data completa:", data); // Imprimir a data completa
+
+          const day = String(data.getDate()).padStart(2, '0');
+          const month = String(data.getMonth() + 1).padStart(2, '0');
+          const year = data.getFullYear();
+          dataFormatada = `${day}/${month}/${year}`;
+        }
+      }
+
+      if (dataFormatada) {
+        const local = item["Local"]?.trim() || "Local não informado";
+        const promotor = item["Promotor"]?.trim() || "Promotor não informado";
+        const atividade = item["Atividade"]?.trim() || "Atividade não informada";
+        const executado = item["Executado"].toString().toLowerCase() === "sim" ? 1 : 0;
+
+        datasSet.add(dataFormatada);
+        atividadesSet.add(atividade);
+        
+        const chave = `${local}__${promotor}__${atividade}`;
+        if (!dadosOrganizados[chave]) {
+          dadosOrganizados[chave] = { 
+            Local: local, 
+            Promotor: promotor, 
+            Atividade: atividade, 
+            datas: {}, 
+            total: 0 
+          };
+        }
+        
+        dadosOrganizados[chave].datas[dataFormatada] = executado;
+        dadosOrganizados[chave].total += executado;
+      }
+    } catch (error) {
+      console.error("Erro ao processar linha:", item, error);
+    }
+  });
+
+      datas = Array.from(datasSet).sort((a, b) => {
+  const [diaA, mesA, anoA] = a.split('/').map(Number);
+  const [diaB, mesB, anoB] = b.split('/').map(Number);
+  return new Date(anoA, mesA - 1, diaA) - new Date(anoB, mesB - 1, diaB);
+});
+
+      const filtro = document.getElementById("filtroAtividades");
+      filtro.innerHTML = '<option value="TODAS">Todas as atividades</option>';
+      [...atividadesSet].sort().forEach(atividade => {
+        const op = document.createElement("option");
+        op.value = atividade;
+        op.textContent = atividade;
+        filtro.appendChild(op);
+      });
+
+      document.getElementById("btnExport").style.display = "inline-block";
+      document.getElementById("btnBuscar").click();
+    }
+
+    document.getElementById("btnBuscar").addEventListener("click", () => {
+      const selecionada = document.getElementById("filtroAtividades").value;
+      const exportarTodas = selecionada === "TODAS";
+
+      const container = document.getElementById("tabelaContainer");
+      
+      if (Object.keys(dadosOrganizados).length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div>📊</div>
+            <h3>Nenhum dado disponível</h3>
+            <p>Carregue um arquivo Excel para visualizar os dados</p>
+          </div>
+        `;
+        return;
+      }
+
+      const tabela = document.createElement("table");
+      let header = "<tr><th>Local</th><th>Promotor</th><th>Atividade</th>";
+      header += datas.map(d => `<th>${d}</th>`).join("") + "<th>Total</th></tr>";
+
+      let linhas = "";
+      const itensFiltrados = Object.values(dadosOrganizados)
+        .filter(item => exportarTodas || item.Atividade === selecionada);
+
+      if (itensFiltrados.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div>🔍</div>
+            <h3>Nenhum resultado encontrado</h3>
+            <p>Não há dados para o filtro selecionado</p>
+          </div>
+        `;
+        return;
+      }
+
+      itensFiltrados.forEach(item => {
+        let linha = `<td>${item.Local}</td><td>${item.Promotor}</td><td>${item.Atividade}</td>`;
+        datas.forEach(d => {
+          const valor = item.datas[d];
+          if (valor === 1) linha += '<td class="executado">1</td>';
+          else if (valor === 0) linha += '<td class="nao-executado">0</td>';
+          else linha += '<td class="sem-dado">-</td>';
+        });
+        linha += `<td>${item.total}</td>`;
+        linhas += `<tr>${linha}</tr>`;
+      });
+
+      tabela.innerHTML = header + linhas;
+      container.innerHTML = "";
+      container.appendChild(tabela);
+    });
+
+    document.getElementById("btnExport").addEventListener("click", async () => {
+      const selecionada = document.getElementById("filtroAtividades").value;
+      const exportarTodas = selecionada === "TODAS";
+
+      try {
+        showLoading(true);
+        const tabela = document.querySelector("table");
+        if (!tabela) {
+          alert("Nenhum dado disponível para exportar.");
+          return;
+        }
+
+        const wb = new ExcelJS.Workbook();
+        const ws = wb.addWorksheet("Relatório");
+
+        const linhas = [];
+        tabela.querySelectorAll("tr").forEach(tr => {
+          const linha = [];
+          tr.querySelectorAll("th, td").forEach(cell => {
+            linha.push(cell.innerText);
+          });
+          linhas.push(linha);
+        });
+
+        linhas.forEach((linha, i) => {
+          const atividade = linha[2];
+          if (i === 0 || exportarTodas || atividade === selecionada) {
+            const row = ws.addRow(linha);
+            row.alignment = { vertical: "middle", horizontal: "center" };
+
+            linha.forEach((valor, j) => {
+              const cell = row.getCell(j + 1);
+              cell.border = {
+                top: { style: "thin" },
+                left: { style: "thin" },
+                bottom: { style: "thin" },
+                right: { style: "thin" }
+              };
+
+              if (i === 0) {
+                cell.font = { bold: true, color: { argb: "FFFFFF" } };
+                cell.fill = {
+                  type: "pattern",
+                  pattern: "solid",
+                  fgColor: { argb: "000000" }
+                };
+              } else {
+                const isColunaData = j >= 3 && j < linha.length - 1;
+                if (isColunaData) {
+                  if (valor === "1") {
+                    cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "C6EFCE" } };
+                  } else if (valor === "0") {
+                    cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFC7CE" } };
+                  } else if (valor === "-") {
+                    cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "F2F2F2" } };
+                  }
+                }
+                cell.font = { color: { argb: "000000" } };
+              }
+            });
+          }
+        });
+
+        // Auto ajustar largura das colunas
+        ws.columns.forEach(column => {
+          let maxLength = 0;
+          column.eachCell({ includeEmpty: true }, cell => {
+            const columnLength = cell.value ? cell.value.toString().length : 0;
+            if (columnLength > maxLength) {
+              maxLength = columnLength;
+            }
+          });
+          column.width = Math.min(Math.max(maxLength + 2, 10), 30);
+        });
+
+        const buffer = await wb.xlsx.writeBuffer();
+        const nomeArquivo = `relatorio_${(exportarTodas ? "TODAS" : selecionada).replace(/\s+/g, "_")}.xlsx`;
+        saveAs(new Blob([buffer]), nomeArquivo);
+      } catch (error) {
+        console.error("Erro ao exportar:", error);
+        alert("Erro ao gerar o arquivo Excel.");
+      } finally {
+        showLoading(false);
+      }
+    });
+  </script>
+</body>
+</html>
