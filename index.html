@@ -1,11 +1,11 @@
-<!DOCTYPE html>
+  <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <title>Relatório de Execução</title>
+  <title>Relatório de Visitas Consolidadas</title>
   <!-- Favicon e metatags para PWA -->
   <link rel="icon" href="favicon.ico" type="favicon.ico">
-  <link rel="apple-touch-icon" href="logo ap 03.png">
+  <link rel="apple-touch-icon" href="logo ap 04.png">
   <meta name="theme-color" content="#ff9100">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Relatório de Visitas Consolidadas">
@@ -51,7 +51,7 @@
     }
 
     header img {
-      height: 42px;
+      height: 60px;
       user-select: none;
     }
 
@@ -275,7 +275,7 @@
   </div>
 
   <header>
-    <img src="logo ap 03.png" alt="Logo" id="appLogo">
+    <img src="logo ap 04.png" alt="Logo" id="appLogo">
     <h1>RELATÓRIO DE VISITAS CONSOLIDADAS</h1>
   </header>
 
@@ -401,11 +401,6 @@
       } else if (typeof rawData === "string") {
         const data = new Date(rawData);
         if (!isNaN(data)) {
-          // ADICIONANDO O CÓDIGO DE DIAGNÓSTICO AQUI
-          console.log("Data original:", rawData);
-          console.log("Dia da semana calculado:", data.getDay()); // Diagnóstico do dia da semana
-          console.log("Data completa:", data); // Imprimir a data completa
-
           const day = String(data.getDate()).padStart(2, '0');
           const month = String(data.getMonth() + 1).padStart(2, '0');
           const year = data.getFullYear();
@@ -415,18 +410,16 @@
 
       if (dataFormatada) {
         const local = item["Local"]?.trim() || "Local não informado";
-        const promotor = item["Promotor"]?.trim() || "Promotor não informado";
         const atividade = item["Atividade"]?.trim() || "Atividade não informada";
         const executado = item["Executado"].toString().toLowerCase() === "sim" ? 1 : 0;
 
         datasSet.add(dataFormatada);
         atividadesSet.add(atividade);
         
-        const chave = `${local}__${promotor}__${atividade}`;
+        const chave = `${local}__${atividade}`;
         if (!dadosOrganizados[chave]) {
           dadosOrganizados[chave] = { 
             Local: local, 
-            Promotor: promotor, 
             Atividade: atividade, 
             datas: {}, 
             total: 0 
@@ -441,24 +434,24 @@
     }
   });
 
-      datas = Array.from(datasSet).sort((a, b) => {
-  const [diaA, mesA, anoA] = a.split('/').map(Number);
-  const [diaB, mesB, anoB] = b.split('/').map(Number);
-  return new Date(anoA, mesA - 1, diaA) - new Date(anoB, mesB - 1, diaB);
-});
+  datas = Array.from(datasSet).sort((a, b) => {
+    const [diaA, mesA, anoA] = a.split('/').map(Number);
+    const [diaB, mesB, anoB] = b.split('/').map(Number);
+    return new Date(anoA, mesA - 1, diaA) - new Date(anoB, mesB - 1, diaB);
+  });
 
-      const filtro = document.getElementById("filtroAtividades");
-      filtro.innerHTML = '<option value="TODAS">Todas as atividades</option>';
-      [...atividadesSet].sort().forEach(atividade => {
-        const op = document.createElement("option");
-        op.value = atividade;
-        op.textContent = atividade;
-        filtro.appendChild(op);
-      });
+  const filtro = document.getElementById("filtroAtividades");
+  filtro.innerHTML = '<option value="TODAS">Todas as atividades</option>';
+  [...atividadesSet].sort().forEach(atividade => {
+    const op = document.createElement("option");
+    op.value = atividade;
+    op.textContent = atividade;
+    filtro.appendChild(op);
+  });
 
-      document.getElementById("btnExport").style.display = "inline-block";
-      document.getElementById("btnBuscar").click();
-    }
+  document.getElementById("btnExport").style.display = "inline-block";
+  document.getElementById("btnBuscar").click();
+}
 
     document.getElementById("btnBuscar").addEventListener("click", () => {
       const selecionada = document.getElementById("filtroAtividades").value;
@@ -478,126 +471,135 @@
       }
 
       const tabela = document.createElement("table");
-      let header = "<tr><th>Local</th><th>Promotor</th><th>Atividade</th>";
-      header += datas.map(d => `<th>${d}</th>`).join("") + "<th>Total</th></tr>";
+      let header = "<tr><th>Local</th><th>Atividade</th>"; // Remova a coluna Promotor daqui
+header += datas.map(d => `<th>${d}</th>`).join("") + "<th>Total</th></tr>";
 
-      let linhas = "";
-      const itensFiltrados = Object.values(dadosOrganizados)
-        .filter(item => exportarTodas || item.Atividade === selecionada);
+let linhas = "";
+const itensFiltrados = Object.values(dadosOrganizados)
+  .filter(item => exportarTodas || item.Atividade === selecionada);
 
-      if (itensFiltrados.length === 0) {
-        container.innerHTML = `
-          <div class="empty-state">
-            <div>🔍</div>
-            <h3>Nenhum resultado encontrado</h3>
-            <p>Não há dados para o filtro selecionado</p>
-          </div>
-        `;
-        return;
-      }
+if (itensFiltrados.length === 0) {
+  container.innerHTML = `
+    <div class="empty-state">
+      <div>🔍</div>
+      <h3>Nenhum resultado encontrado</h3>
+      <p>Não há dados para o filtro selecionado</p>
+    </div>
+  `;
+  return;
+}
 
-      itensFiltrados.forEach(item => {
-        let linha = `<td>${item.Local}</td><td>${item.Promotor}</td><td>${item.Atividade}</td>`;
-        datas.forEach(d => {
-          const valor = item.datas[d];
-          if (valor === 1) linha += '<td class="executado">1</td>';
-          else if (valor === 0) linha += '<td class="nao-executado">0</td>';
-          else linha += '<td class="sem-dado">-</td>';
-        });
-        linha += `<td>${item.total}</td>`;
-        linhas += `<tr>${linha}</tr>`;
-      });
+itensFiltrados.forEach(item => {
+  let linha = `<td>${item.Local}</td><td>${item.Atividade}</td>`; // Remova a coluna "Promotor" aqui também
+  datas.forEach(d => {
+    const valor = item.datas[d];
+    if (valor === 1) linha += '<td class="executado">1</td>';
+    else if (valor === 0) linha += '<td class="nao-executado">0</td>';
+    else linha += '<td class="sem-dado">-</td>';
+  });
+  linha += `<td>${item.total}</td>`;
+  linhas += `<tr>${linha}</tr>`;
+});
 
-      tabela.innerHTML = header + linhas;
+tabela.innerHTML = header + linhas;
       container.innerHTML = "";
       container.appendChild(tabela);
     });
 
     document.getElementById("btnExport").addEventListener("click", async () => {
-      const selecionada = document.getElementById("filtroAtividades").value;
-      const exportarTodas = selecionada === "TODAS";
+  const selecionada = document.getElementById("filtroAtividades").value;
+  const exportarTodas = selecionada === "TODAS";
 
-      try {
-        showLoading(true);
-        const tabela = document.querySelector("table");
-        if (!tabela) {
-          alert("Nenhum dado disponível para exportar.");
-          return;
-        }
+  try {
+    showLoading(true);
+    const tabela = document.querySelector("table");
+    if (!tabela) {
+      alert("Nenhum dado disponível para exportar.");
+      return;
+    }
 
-        const wb = new ExcelJS.Workbook();
-        const ws = wb.addWorksheet("Relatório");
+    const wb = new ExcelJS.Workbook();
+    const ws = wb.addWorksheet("Relatório");
 
-        const linhas = [];
-        tabela.querySelectorAll("tr").forEach(tr => {
-          const linha = [];
-          tr.querySelectorAll("th, td").forEach(cell => {
-            linha.push(cell.innerText);
-          });
+    // Inicializar as linhas, começando com o cabeçalho
+    const linhas = [];
+    // A primeira linha com cabeçalhos
+    let header = ["Local", "Atividade", ...datas, "Total"];
+    linhas.push(header);
+
+    // Adicionar os dados das linhas (sem incluir a linha de cabeçalho da tabela visual)
+    tabela.querySelectorAll("tr").forEach((tr, index) => {
+      // Ignorar a primeira linha, que é o cabeçalho da tabela
+      if (index > 0) {
+        const linha = [];
+        tr.querySelectorAll("th, td").forEach(cell => {
+          linha.push(cell.innerText);
+        });
+        if (linha.length > 0) {
           linhas.push(linha);
-        });
-
-        linhas.forEach((linha, i) => {
-          const atividade = linha[2];
-          if (i === 0 || exportarTodas || atividade === selecionada) {
-            const row = ws.addRow(linha);
-            row.alignment = { vertical: "middle", horizontal: "center" };
-
-            linha.forEach((valor, j) => {
-              const cell = row.getCell(j + 1);
-              cell.border = {
-                top: { style: "thin" },
-                left: { style: "thin" },
-                bottom: { style: "thin" },
-                right: { style: "thin" }
-              };
-
-              if (i === 0) {
-                cell.font = { bold: true, color: { argb: "FFFFFF" } };
-                cell.fill = {
-                  type: "pattern",
-                  pattern: "solid",
-                  fgColor: { argb: "000000" }
-                };
-              } else {
-                const isColunaData = j >= 3 && j < linha.length - 1;
-                if (isColunaData) {
-                  if (valor === "1") {
-                    cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "C6EFCE" } };
-                  } else if (valor === "0") {
-                    cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFC7CE" } };
-                  } else if (valor === "-") {
-                    cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "F2F2F2" } };
-                  }
-                }
-                cell.font = { color: { argb: "000000" } };
-              }
-            });
-          }
-        });
-
-        // Auto ajustar largura das colunas
-        ws.columns.forEach(column => {
-          let maxLength = 0;
-          column.eachCell({ includeEmpty: true }, cell => {
-            const columnLength = cell.value ? cell.value.toString().length : 0;
-            if (columnLength > maxLength) {
-              maxLength = columnLength;
-            }
-          });
-          column.width = Math.min(Math.max(maxLength + 2, 10), 30);
-        });
-
-        const buffer = await wb.xlsx.writeBuffer();
-        const nomeArquivo = `relatorio_${(exportarTodas ? "TODAS" : selecionada).replace(/\s+/g, "_")}.xlsx`;
-        saveAs(new Blob([buffer]), nomeArquivo);
-      } catch (error) {
-        console.error("Erro ao exportar:", error);
-        alert("Erro ao gerar o arquivo Excel.");
-      } finally {
-        showLoading(false);
+        }
       }
     });
+
+    // Adicionar as linhas na planilha do Excel
+    linhas.forEach((linha, i) => {
+      const row = ws.addRow(linha);
+      row.alignment = { vertical: "middle", horizontal: "center" };
+
+      linha.forEach((valor, j) => {
+        const cell = row.getCell(j + 1);
+        cell.border = {
+          top: { style: "thin" },
+          left: { style: "thin" },
+          bottom: { style: "thin" },
+          right: { style: "thin" }
+        };
+
+        if (i === 0) {
+          cell.font = { bold: true, color: { argb: "FFFFFF" } };
+          cell.fill = {
+            type: "pattern",
+            pattern: "solid",
+            fgColor: { argb: "000000" }
+          };
+        } else {
+          const isColunaData = j >= 2 && j < linha.length - 1;
+          if (isColunaData) {
+            if (valor === "1") {
+              cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "C6EFCE" } };
+            } else if (valor === "0") {
+              cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFC7CE" } };
+            } else if (valor === "-") {
+              cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "F2F2F2" } };
+            }
+          }
+          cell.font = { color: { argb: "000000" } };
+        }
+      });
+    });
+
+    // Ajustar a largura das colunas
+    ws.columns.forEach(column => {
+      let maxLength = 0;
+      column.eachCell({ includeEmpty: true }, cell => {
+        const columnLength = cell.value ? cell.value.toString().length : 0;
+        if (columnLength > maxLength) {
+          maxLength = columnLength;
+        }
+      });
+      column.width = Math.min(Math.max(maxLength + 2, 10), 30);
+    });
+
+    const buffer = await wb.xlsx.writeBuffer();
+    const nomeArquivo = `relatorio_${(exportarTodas ? "TODAS" : selecionada).replace(/\s+/g, "_")}.xlsx`;
+    saveAs(new Blob([buffer]), nomeArquivo);
+  } catch (error) {
+    console.error("Erro ao exportar:", error);
+    alert("Erro ao gerar o arquivo Excel.");
+  } finally {
+    showLoading(false);
+  }
+});
   </script>
 </body>
 </html>
