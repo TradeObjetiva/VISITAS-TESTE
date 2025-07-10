@@ -426,7 +426,12 @@
           };
         }
         
-        dadosOrganizados[chave].datas[dataFormatada] = executado;
+        // Aqui, alteramos para garantir que se já houver uma entrada para a mesma data e atividade,
+        // o valor "Sim" (1) prevalecerá sobre "Não" (0).
+        if (executado === 1 || !dadosOrganizados[chave].datas[dataFormatada]) {
+          dadosOrganizados[chave].datas[dataFormatada] = executado;
+        }
+        
         dadosOrganizados[chave].total += executado;
       }
     } catch (error) {
@@ -452,6 +457,7 @@
   document.getElementById("btnExport").style.display = "inline-block";
   document.getElementById("btnBuscar").click();
 }
+
 
     document.getElementById("btnBuscar").addEventListener("click", () => {
       const selecionada = document.getElementById("filtroAtividades").value;
